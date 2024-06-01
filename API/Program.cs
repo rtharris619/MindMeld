@@ -1,10 +1,7 @@
-using API;
 using API.Extensions;
 using Application;
 using Infrastructure;
-using Infrastructure.Repositories;
 using Microsoft.EntityFrameworkCore;
-using System.Reflection;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -12,8 +9,6 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddDbContext<MindMeldContext>(opt =>
     opt.UseNpgsql(builder.Configuration.GetConnectionString("Database")));
-
-//builder.Services.AddApplication();
 
 foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
 {

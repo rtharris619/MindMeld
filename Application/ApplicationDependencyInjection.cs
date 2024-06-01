@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace Application
 {
-    public static class ApplicationCompose
+    public static class ApplicationDependencyInjection
     {
         public static IServiceCollection ConfigureApplicationServices(this IServiceCollection services, IConfiguration configuration)
         {

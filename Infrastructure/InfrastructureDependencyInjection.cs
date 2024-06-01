@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace Infrastructure
 {
-    public static class InfrastructureCompose
+    public static class InfrastructureDependencyInjection
     {
         public static IServiceCollection ConfigureInfrastructureServices(this IServiceCollection services, IConfiguration configuration)
         {
