@@ -6,10 +6,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Application.UseCases.Quotes.Query
-{
-    public class QuoteListRequest : IRequest<List<QuoteDTO>>
-    {
+namespace Application.UseCases.Quotes.Query;
 
-    }
+public sealed class QuoteListRequest : IQuery<List<QuoteDTO>>
+{
+
 }

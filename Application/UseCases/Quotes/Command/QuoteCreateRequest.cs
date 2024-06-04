@@ -6,10 +6,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Application.UseCases.Quotes.Command
+namespace Application.UseCases.Quotes.Command;
+
+public sealed class QuoteCreateRequest : ICommand<int>
 {
-    public class QuoteCreateRequest : IRequest<CommandResponse>
-    {
-        public QuoteDTO QuoteDTO { get; set; }
-    }
+    public QuoteDTO QuoteDTO { get; set; }
 }

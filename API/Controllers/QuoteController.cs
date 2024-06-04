@@ -20,24 +20,19 @@ namespace API.Controllers
         }
 
         [HttpGet(Name = "GetQuotes")]
-        public async Task<IEnumerable<QuoteDTO>> GetQuotes()
+        public async Task<IActionResult> GetQuotes(CancellationToken cancellationToken)
         {
-            var quotes = await _mediator.Send(new QuoteListRequest());
+            var response = await _mediator.Send(new QuoteListRequest(), cancellationToken);
 
-            return quotes;
+            return response.IsSuccess ? Ok(response.Value) : BadRequest(response.Errors);
         }
 
         [HttpPost(Name = "CreateQuote")]
-        public async Task<IActionResult> CreateQuote(QuoteDTO quoteDTO)
-        {
-            var response = await _mediator.Send(new QuoteCreateRequest { QuoteDTO = quoteDTO });
+        public async Task<IActionResult> CreateQuote(QuoteDTO quoteDTO, CancellationToken cancellationToken)
+        {           
+            var response = await _mediator.Send(new QuoteCreateRequest { QuoteDTO = quoteDTO }, cancellationToken);
 
-            if (response.Success)
-            {
-                return Ok(response.Message);
-            }
-
-            return BadRequest(response.Message);
+            return response.IsSuccess ? Ok(response.Value) : BadRequest(response.Errors);
         }
     }
 }

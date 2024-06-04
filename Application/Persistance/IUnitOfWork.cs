@@ -12,6 +12,6 @@ namespace Application.Persistance
         IGenericRepository<Author> AuthorRepository { get; }
         IGenericRepository<Quote> QuoteRepository { get; }
 
-        void Commit();
+        Task<int> Commit(CancellationToken cancellationToken);
     }
 }

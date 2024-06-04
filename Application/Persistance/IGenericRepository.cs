@@ -9,17 +9,21 @@ namespace Application.Persistance
 {
     public interface IGenericRepository<TEntity> where TEntity : class    
     {
-        IEnumerable<TEntity> Get(
+        Task<IEnumerable<TEntity>> GetList(
             Expression<Func<TEntity, bool>>? filter = null,
             Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>>? orderBy = null,
             string includeProperties = "");
 
-        TEntity GetByID(Guid id);
+        Task<TEntity> GetOne(
+            Expression<Func<TEntity, bool>>? filter = null,
+            string includeProperties = "");
 
-        void Create(TEntity entity);
+        Task<TEntity> GetByID(Guid id);
+
+        Task Add(TEntity entity);
 
         void Update(TEntity entity);
 
-        void Delete(Guid id);
+        Task Remove(Guid id);
     }
 }

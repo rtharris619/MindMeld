@@ -1,4 +1,7 @@
 ﻿using Application.Persistance;
+using Application.Validation;
+using Domain.Models;
+using FluentValidation;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using System;
@@ -13,6 +16,8 @@ namespace Application
     {
         public static IServiceCollection ConfigureApplicationServices(this IServiceCollection services, IConfiguration configuration)
         {
+            services.AddScoped<IValidator<Quote>, QuoteValidator>();
+
             return services;
         }
     }

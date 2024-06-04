@@ -27,9 +27,9 @@ namespace Infrastructure
         public IGenericRepository<Author> AuthorRepository => authorRepository;
         public IGenericRepository<Quote> QuoteRepository => quoteRepository;
 
-        public void Commit()
+        public async Task<int> Commit(CancellationToken cancellationToken)
         {
-            _context.SaveChanges();
+            return await _context.SaveChangesAsync(cancellationToken);
         }
 
         public void Dispose()

@@ -20,9 +20,9 @@ namespace Infrastructure.Repositories
             this.dbSet = context.Set<TEntity>();
         }
 
-        public virtual IEnumerable<TEntity> Get(
-            Expression<Func<TEntity, bool>> filter = null, 
-            Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>> orderBy = null,
+        public virtual async Task<IEnumerable<TEntity>> GetList(
+            Expression<Func<TEntity, bool>>? filter = null, 
+            Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>>? orderBy = null,
             string includeProperties = "")
         {
             IQueryable<TEntity> query = dbSet;
@@ -40,22 +40,42 @@ namespace Infrastructure.Repositories
 
             if (orderBy != null)
             {
-                return orderBy(query).ToList();
+                return await orderBy(query).ToListAsync();
             }
             else
             {
-                return query.ToList();
+                return await query.ToListAsync();
             }
         }
 
-        public virtual TEntity GetByID(Guid id)
+        public virtual async Task<TEntity?> GetOne(
+            Expression<Func<TEntity, bool>>? filter = null,
+            string includeProperties = "")
         {
-            return dbSet.Find(id);
+            IQueryable<TEntity> query = dbSet;
+
+            if (filter != null)
+            {
+                query = query.Where(filter);
+            }
+
+            foreach (var includeProperty in includeProperties.Split
+                               (new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries))
+            {
+                query = query.Include(includeProperty);
+            }
+
+            return await query.FirstOrDefaultAsync();
         }
 
-        public virtual void Create(TEntity entity)
+        public virtual async Task<TEntity> GetByID(Guid id)
         {
-            dbSet.Add(entity);
+            return await dbSet.FindAsync(id);
+        }
+
+        public virtual async Task Add(TEntity entity)
+        {
+            await dbSet.AddAsync(entity);
         }
 
         public virtual void Update(TEntity entity)
@@ -64,9 +84,9 @@ namespace Infrastructure.Repositories
             context.Entry(entity).State = EntityState.Modified;
         }
 
-        public virtual void Delete(Guid id)
+        public virtual async Task Remove(Guid id)
         {
-            TEntity entityToDelete = dbSet.Find(id);
+            TEntity entityToDelete = await dbSet.FindAsync(id);
             Delete(entityToDelete);
         }
 

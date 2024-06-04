@@ -9,7 +9,7 @@ namespace API.Extensions
         {
             using IServiceScope scope = app.ApplicationServices.CreateScope();
 
-            using MindMeldContext context = scope.ServiceProvider.GetRequiredService<MindMeldContext>();
+            using MindMeldContext context = scope.ServiceProvider.GetRequiredService<MindMeldContext>();            
            
             context.Database.Migrate();
         }

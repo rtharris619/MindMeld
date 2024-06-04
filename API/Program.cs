@@ -2,6 +2,7 @@ using API.Extensions;
 using Application;
 using Infrastructure;
 using Microsoft.EntityFrameworkCore;
+using System.Reflection;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -10,10 +11,8 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddDbContext<MindMeldContext>(opt =>
     opt.UseNpgsql(builder.Configuration.GetConnectionString("Database")));
 
-foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
-{
-    builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssemblies(assembly));
-}
+builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssemblies(Assembly.GetExecutingAssembly()));
+builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssemblies(ApplicationAssemblyReference.assembly));
 
 builder.Services.ConfigureApplicationServices(builder.Configuration);
 builder.Services.ConfigureInfrastructureServices(builder.Configuration);
