@@ -5,6 +5,7 @@ using Application.UseCases.Quotes.Query;
 using Domain.Models;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
+using Serilog;
 
 namespace API.Controllers
 {

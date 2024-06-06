@@ -1,7 +1,9 @@
-﻿using Application.Persistance;
+﻿using Application.Behaviours;
+using Application.Persistance;
 using Application.Validation;
 using Domain.Models;
 using FluentValidation;
+using MediatR;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using System;
@@ -17,6 +19,8 @@ namespace Application
         public static IServiceCollection ConfigureApplicationServices(this IServiceCollection services, IConfiguration configuration)
         {
             services.AddScoped<IValidator<Quote>, QuoteValidator>();
+
+            services.AddSingleton(typeof(IPipelineBehavior<,>), typeof(LoggingBehaviour<,>));
 
             return services;
         }
