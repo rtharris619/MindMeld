@@ -1,3 +1,4 @@
+using API.Extensions;
 using Application;
 using Infrastructure;
 using System.Reflection;
@@ -27,7 +28,7 @@ if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
-    //app.ApplyMigration();
+    app.ApplyMigration(); // TODO: Need to figure out how to move this to Infra layer.
 }
 
 app.UseHttpsRedirection();

@@ -1,4 +1,5 @@
 ﻿using Infrastructure;
+using Microsoft.EntityFrameworkCore;
 
 namespace API.Extensions
 {
@@ -6,11 +7,11 @@ namespace API.Extensions
     {
         public static void ApplyMigration(this IApplicationBuilder app)
         {
-            //using IServiceScope scope = app.ApplicationServices.CreateScope();
+            using IServiceScope scope = app.ApplicationServices.CreateScope();
 
-            //using MindMeldContext context = scope.ServiceProvider.GetRequiredService<MindMeldContext>();            
-           
-            //context.Database.Migrate();
+            using MindMeldContext context = scope.ServiceProvider.GetRequiredService<MindMeldContext>();
+
+            context.Database.Migrate();
         }
     }
 }
