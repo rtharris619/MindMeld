@@ -38,7 +38,7 @@ namespace API.Controllers
         [HttpPost]
         public async Task<IActionResult> CreateQuote(QuoteDTO quoteDTO, CancellationToken cancellationToken)
         {           
-            var response = await _mediator.Send(new QuoteCreateRequest { QuoteDTO = quoteDTO }, cancellationToken);
+            var response = await _mediator.Send(new QuoteCreateCommand { QuoteDTO = quoteDTO }, cancellationToken);
 
             return response.IsSuccess ? Ok(response.Value) : BadRequest(response.Errors);
         }

@@ -13,18 +13,18 @@ using System.Threading.Tasks;
 
 namespace Application.UseCases.Quotes.Command
 {
-    public class QuoteCreateHandler : ICommandHandler<QuoteCreateRequest, int>
+    public class QuoteCreateCommandHandler : ICommandHandler<QuoteCreateCommand, int>
     {
         private readonly IUnitOfWork _unitOfWork;
         private IValidator<Quote> _validator;
 
-        public QuoteCreateHandler(IUnitOfWork unitOfWork, IValidator<Quote> validator)
+        public QuoteCreateCommandHandler(IUnitOfWork unitOfWork, IValidator<Quote> validator)
         {
             _unitOfWork = unitOfWork;
             _validator = validator;
         }
 
-        public async Task<Result<int>> Handle(QuoteCreateRequest request, CancellationToken cancellationToken)
+        public async Task<Result<int>> Handle(QuoteCreateCommand request, CancellationToken cancellationToken)
         {
             if (cancellationToken.IsCancellationRequested)
             {
@@ -59,7 +59,7 @@ namespace Application.UseCases.Quotes.Command
             await _unitOfWork.QuoteRepository.Add(quoteToSave);
         }
 
-        private async Task<Author> AddAuthor(QuoteCreateRequest request, Quote quote)
+        private async Task<Author> AddAuthor(QuoteCreateCommand request, Quote quote)
         {
             var author = await _unitOfWork.AuthorRepository.GetOne(filter: x => x.Name == quote.Author.Name);
 
