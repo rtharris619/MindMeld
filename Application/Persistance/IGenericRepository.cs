@@ -18,7 +18,7 @@ namespace Application.Persistance
             Expression<Func<TEntity, bool>>? filter = null,
             string includeProperties = "");
 
-        Task<TEntity> GetByID(Guid id);
+        Task<TEntity?> GetByID(Guid id, string includeProperties = "");
 
         Task Add(TEntity entity);
 

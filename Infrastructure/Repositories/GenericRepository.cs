@@ -2,10 +2,12 @@
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Text;
 using System.Threading.Tasks;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace Infrastructure.Repositories
 {
@@ -14,10 +16,10 @@ namespace Infrastructure.Repositories
         internal MindMeldContext context;
         internal DbSet<TEntity> dbSet;
 
-        public GenericRepository(MindMeldContext context)
+        public GenericRepository(MindMeldContext dbContext)
         {
-            this.context = context;
-            this.dbSet = context.Set<TEntity>();
+            context = dbContext;
+            dbSet = context.Set<TEntity>();
         }
 
         public virtual async Task<IEnumerable<TEntity>> GetList(
@@ -68,9 +70,22 @@ namespace Infrastructure.Repositories
             return await query.FirstOrDefaultAsync();
         }
 
-        public virtual async Task<TEntity> GetByID(Guid id)
+        public virtual async Task<TEntity?> GetByID(Guid id, string includeProperties = "")
         {
-            return await dbSet.FindAsync(id);
+            TEntity? entity = await dbSet.FindAsync(id);
+
+            if (entity == null)
+            {
+                return null;
+            }
+
+            foreach (var includeProperty in includeProperties.Split
+                               (new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries))
+            {
+                context.Entry(entity).Reference(includeProperty).Load();
+            }
+
+            return entity;
         }
 
         public virtual async Task Add(TEntity entity)

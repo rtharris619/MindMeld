@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace API.Controllers
 {
     [ApiController]
-    [Route("[controller]")]
+    [Route("api/quotes")]
     public class QuoteController : ControllerBase
     {
         private readonly IMediator _mediator;
@@ -19,7 +19,7 @@ namespace API.Controllers
             _mediator = mediator;
         }
 
-        [HttpGet(Name = "GetQuotes")]
+        [HttpGet]
         public async Task<IActionResult> GetQuotes(CancellationToken cancellationToken)
         {
             var response = await _mediator.Send(new QuoteListRequest(), cancellationToken);
@@ -27,7 +27,15 @@ namespace API.Controllers
             return response.IsSuccess ? Ok(response.Value) : BadRequest(response.Errors);
         }
 
-        [HttpPost(Name = "CreateQuote")]
+        [HttpGet("{id}", Name = "GetQuoteById")]
+        public async Task<IActionResult> GetQuoteById(Guid id, CancellationToken cancellationToken)
+        {
+            var response = await _mediator.Send(new QuoteRequest { Id = id }, cancellationToken);
+
+            return response.IsSuccess ? Ok(response.Value) : BadRequest(response.Errors);
+        }
+
+        [HttpPost]
         public async Task<IActionResult> CreateQuote(QuoteDTO quoteDTO, CancellationToken cancellationToken)
         {           
             var response = await _mediator.Send(new QuoteCreateRequest { QuoteDTO = quoteDTO }, cancellationToken);

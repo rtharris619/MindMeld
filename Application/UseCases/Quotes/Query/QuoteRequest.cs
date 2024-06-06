@@ -9,5 +9,5 @@ namespace Application.UseCases.Quotes.Query;
 
 public sealed class QuoteRequest : IQuery<QuoteDTO>
 {
-
+    public Guid Id { get; set; }
 }
