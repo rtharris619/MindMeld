@@ -1,5 +1,6 @@
 ﻿using Application.Persistance;
 using Infrastructure.Repositories;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using System;
@@ -14,6 +15,9 @@ namespace Infrastructure
     {
         public static IServiceCollection ConfigureInfrastructureServices(this IServiceCollection services, IConfiguration configuration)
         {
+            services.AddDbContext<MindMeldContext>(opt =>
+                opt.UseNpgsql(configuration.GetConnectionString("Database")));
+
             services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
             services.AddScoped<IUnitOfWork, UnitOfWork>();
             services.AddScoped<IQuoteRepository, QuoteRepository>();

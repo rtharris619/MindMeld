@@ -23,11 +23,15 @@ namespace Infrastructure
             modelBuilder.Entity<Quote>(entity =>
             {
                 entity.HasKey(e => e.Id);
+                entity.Property(e => e.CreatedDate).HasColumnType("timestamp(6)");
+                entity.Property(e => e.ModifiedDate).HasColumnType("timestamp(6)");
             });
 
             modelBuilder.Entity<Author>(entity =>
             {
                 entity.HasKey(e => e.Id);
+                entity.Property(e => e.CreatedDate).HasColumnType("timestamp(6)");
+                entity.Property(e => e.ModifiedDate).HasColumnType("timestamp(6)");
             });
         }
 
@@ -66,9 +70,9 @@ namespace Infrastructure
                     var track = entity as Base;
                     if (state == EntityState.Added)
                     {
-                        track.CreatedDate = DateTime.UtcNow;
-                    }                    
-                    track.ModifiedDate = DateTime.UtcNow;
+                        track.CreatedDate = DateTime.Now; //DateTime.UtcNow;
+                    }
+                    track.ModifiedDate = DateTime.Now;
                 }
             }
         }

@@ -1,15 +1,13 @@
-using API.Extensions;
 using Application;
 using Infrastructure;
-using Microsoft.EntityFrameworkCore;
 using System.Reflection;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 
-builder.Services.AddDbContext<MindMeldContext>(opt =>
-    opt.UseNpgsql(builder.Configuration.GetConnectionString("Database")));
+//builder.Services.AddDbContext<MindMeldContext>(opt =>
+//    opt.UseNpgsql(builder.Configuration.GetConnectionString("Database")));
 
 builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssemblies(Assembly.GetExecutingAssembly()));
 builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssemblies(ApplicationAssemblyReference.assembly));
@@ -29,7 +27,7 @@ if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
-    app.ApplyMigration();
+    //app.ApplyMigration();
 }
 
 app.UseHttpsRedirection();
