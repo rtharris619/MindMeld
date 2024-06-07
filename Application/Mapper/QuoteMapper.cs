@@ -16,7 +16,9 @@ namespace Application.Mapper
             {
                 Id = quoteModel.Id,
                 Description = quoteModel.Description,
-                Author = quoteModel.Author?.Name
+                CreatedDate = quoteModel.CreatedDate,
+                ModifiedDate = quoteModel.ModifiedDate,
+                Author = quoteModel.Author?.Name,                
             };
         }
 
@@ -26,6 +28,8 @@ namespace Application.Mapper
             {
                 Id = quoteDTO.Id,
                 Description = quoteDTO.Description,
+                CreatedDate = quoteDTO.CreatedDate,
+                ModifiedDate = quoteDTO.ModifiedDate,
                 Author = new Author { Name = quoteDTO.Author }
             };
         }

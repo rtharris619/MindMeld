@@ -6,9 +6,8 @@ using System.Threading.Tasks;
 
 namespace Application.DTO
 {
-    public class QuoteDTO
-    {
-        public Guid Id { get; set; }
+    public class QuoteDTO : BaseDTO
+    {        
         public required string Description { get; set; }
         public required string Author { get; set; }
     }

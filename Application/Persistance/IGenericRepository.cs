@@ -14,7 +14,7 @@ namespace Application.Persistance
             Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>>? orderBy = null,
             string includeProperties = "");
 
-        Task<TEntity> GetOne(
+        Task<TEntity?> GetOne(
             Expression<Func<TEntity, bool>>? filter = null,
             string includeProperties = "");
 

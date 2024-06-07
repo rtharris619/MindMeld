@@ -3,6 +3,7 @@ using Application.Persistance;
 using Application.Validation;
 using Domain.Models;
 using FluentValidation;
+using Mapster;
 using MediatR;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;

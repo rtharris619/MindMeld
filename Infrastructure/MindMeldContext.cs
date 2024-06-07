@@ -11,8 +11,9 @@ namespace Infrastructure
     public class MindMeldContext : DbContext
     {
         public MindMeldContext(DbContextOptions options) : base(options)
-        {
-            
+        {         
+            if (Database.GetPendingMigrations().Any())
+                Database.Migrate();
         }
 
         public virtual DbSet<Quote> Quotes { get; set; }
