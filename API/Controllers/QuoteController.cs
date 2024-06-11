@@ -11,14 +11,9 @@ namespace API.Controllers
 {
     [ApiController]
     [Route("api/quotes")]
-    public class QuoteController : ControllerBase
+    public class QuoteController(IMediator mediator) : ControllerBase
     {
-        private readonly IMediator _mediator;
-
-        public QuoteController(IMediator mediator)
-        {
-            _mediator = mediator;
-        }
+        private readonly IMediator _mediator = mediator;
 
         [HttpGet]
         public async Task<IActionResult> GetQuotes(CancellationToken cancellationToken)
