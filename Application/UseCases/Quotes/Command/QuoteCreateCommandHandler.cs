@@ -1,28 +1,17 @@
-﻿using Application.Mapper;
-using Application.Persistance;
+﻿using Application.Persistance;
 using Domain.Models;
 using Domain.Shared;
 using FluentValidation;
-using MediatR;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading.Tasks;
+using MapsterMapper;
 
 namespace Application.UseCases.Quotes.Command
 {
-    public class QuoteCreateCommandHandler : ICommandHandler<QuoteCreateCommand, int>
+    public class QuoteCreateCommandHandler(IUnitOfWork unitOfWork, IValidator<Quote> validator, IMapper mapper) 
+        : ICommandHandler<QuoteCreateCommand, int>
     {
-        private readonly IUnitOfWork _unitOfWork;
-        private IValidator<Quote> _validator;
-
-        public QuoteCreateCommandHandler(IUnitOfWork unitOfWork, IValidator<Quote> validator)
-        {
-            _unitOfWork = unitOfWork;
-            _validator = validator;
-        }
+        private readonly IUnitOfWork _unitOfWork = unitOfWork;
+        private readonly IValidator<Quote> _validator = validator;
+        private readonly IMapper _mapper = mapper;
 
         public async Task<Result<int>> Handle(QuoteCreateCommand request, CancellationToken cancellationToken)
         {
@@ -31,7 +20,7 @@ namespace Application.UseCases.Quotes.Command
                 return Result.Failure<int>("Request was cancelled");
             }
 
-            var quote = request.QuoteDTO.MapToQuoteModel();
+            var quote = _mapper.Map<Quote>(request.QuoteDTO);
 
             var validationResult = await Validate(quote);
             if (validationResult != null)
@@ -43,7 +32,7 @@ namespace Application.UseCases.Quotes.Command
 
             await AddQuote(quote, author);
 
-            var rowsAffected = await _unitOfWork.Commit(cancellationToken);
+            var rowsAffected = await _unitOfWork.SaveChanges(cancellationToken);
 
             return rowsAffected;
         }
@@ -67,7 +56,7 @@ namespace Application.UseCases.Quotes.Command
             {
                 author = new Author
                 {
-                    Name = request.QuoteDTO.Author
+                    Name = request.QuoteDTO.Author.Name
                 };
 
                 await _unitOfWork.AuthorRepository.Add(author);

@@ -9,6 +9,6 @@ namespace Application.DTO
     public class QuoteDTO : BaseDTO
     {        
         public required string Description { get; set; }
-        public required string Author { get; set; }
+        public required AuthorDTO Author { get; set; }
     }
 }

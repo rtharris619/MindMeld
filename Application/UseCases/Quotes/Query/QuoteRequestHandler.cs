@@ -1,30 +1,28 @@
 ﻿using Application.DTO;
-using Application.Mapper;
 using Application.Persistance;
+using Domain.Models;
 using Domain.Shared;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using MapsterMapper;
 
 namespace Application.UseCases.Quotes.Query
 {
-    public sealed class QuoteRequestHandler : IQueryHandler<QuoteRequest, QuoteDTO>
+    public sealed class QuoteRequestHandler(IUnitOfWork unitOfWork, IMapper mapper) : IQueryHandler<QuoteRequest, QuoteDTO>
     {
-        private readonly IQuoteRepository _quoteRepository;
-
-        public QuoteRequestHandler(IQuoteRepository quoteRepository)
-        {
-            _quoteRepository = quoteRepository;
-        }
+        private readonly IUnitOfWork _unitOfWork = unitOfWork;
+        private readonly IMapper _mapper = mapper;
 
         public async Task<Result<QuoteDTO>> Handle(QuoteRequest request, CancellationToken cancellationToken)
         {
-            var dbQuote = await _quoteRepository.GetByID(request.Id, includeProperties: "Author");
-            var quote = dbQuote.MapToQuoteDTO();
+            QuoteDTO? result = null;
 
-            return quote;
+            var dbQuote = await _unitOfWork.QuoteRepository.GetByID(request.Id, includeProperties: "Author");
+
+            if (dbQuote != null)
+            {
+                result = _mapper.Map<QuoteDTO>(dbQuote);
+            }
+
+            return result;
         }
     }
 }

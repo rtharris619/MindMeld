@@ -9,9 +9,9 @@ namespace Application.Persistance
 {
     public interface IUnitOfWork
     {
-        IGenericRepository<Author> AuthorRepository { get; }
-        IGenericRepository<Quote> QuoteRepository { get; }
+        IAuthorRepository AuthorRepository { get; }
+        IQuoteRepository QuoteRepository { get; }
 
-        Task<int> Commit(CancellationToken cancellationToken);
+        Task<int> SaveChanges(CancellationToken cancellationToken);
     }
 }

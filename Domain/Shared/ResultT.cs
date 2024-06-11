@@ -18,6 +18,6 @@ namespace Domain.Shared
             ? _value!
             : throw new InvalidOperationException("The value of a failure result can not be accessed.");
 
-        public static implicit operator Result<T>(T? value) => Create(value);        
+        public static implicit operator Result<T>(T? value) => Create(value);
     }
 }

@@ -9,25 +9,33 @@ using System.Threading.Tasks;
 
 namespace Infrastructure
 {
-    public class UnitOfWork : IUnitOfWork, IDisposable
+    public class UnitOfWork(MindMeldContext context) : IUnitOfWork, IDisposable
     {
-        private readonly MindMeldContext _context;
-        private bool disposed = false;
+        private readonly MindMeldContext _context = context;
+        private bool _disposed = false;
 
-        private GenericRepository<Author> authorRepository;
-        private GenericRepository<Quote> quoteRepository;
+        private IAuthorRepository? authorRepository;
+        private IQuoteRepository? quoteRepository;
 
-        public UnitOfWork(MindMeldContext context)
+        public IAuthorRepository AuthorRepository
         {
-            _context = context;
-            authorRepository = new GenericRepository<Author>(_context);
-            quoteRepository = new GenericRepository<Quote>(_context);
+            get
+            {
+                authorRepository ??= new AuthorRepository(_context);
+                return authorRepository;
+            }
         }
 
-        public IGenericRepository<Author> AuthorRepository => authorRepository;
-        public IGenericRepository<Quote> QuoteRepository => quoteRepository;
+        public IQuoteRepository QuoteRepository
+        {
+            get
+            {
+                quoteRepository ??= new QuoteRepository(_context);
+                return quoteRepository;
+            }
+        }
 
-        public async Task<int> Commit(CancellationToken cancellationToken)
+        public async Task<int> SaveChanges(CancellationToken cancellationToken)
         {
             return await _context.SaveChangesAsync(cancellationToken);
         }
@@ -40,14 +48,14 @@ namespace Infrastructure
 
         protected virtual void Dispose(bool disposing)
         {
-            if (!disposed)
+            if (!_disposed)
             {
                 if (disposing)
                 {
                     _context.Dispose();
                 }
             }
-            disposed = true;
+            _disposed = true;
         }
     }
 }
