@@ -10,6 +10,10 @@ namespace Infrastructure
 {
     public class MindMeldContext : DbContext
     {
+        public MindMeldContext()
+        {
+        }
+
         public MindMeldContext(DbContextOptions options) : base(options)
         {         
             if (Database.GetPendingMigrations().Any())

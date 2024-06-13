@@ -4,54 +4,245 @@ using Application.UseCases;
 using Application.UseCases.Quotes.Query;
 using Domain.Models;
 using Domain.Shared;
+using Infrastructure;
+using Infrastructure.Repositories;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Query;
+using Microsoft.Extensions.DependencyModel;
 using Moq;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
+using System.Reflection;
 using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Xunit;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
-namespace UnitTest
+namespace UnitTest;
+
+public class QuoteUnitTest
 {
-    public class QuoteUnitTest
+    [Fact]
+    public async Task Get_All_Quotes_Returns_Ok()
     {
-        [Fact]
-        public async Task Get_All_Quotes_Returns_Ok()
+        var td = new Mock<IMediator>();
+
+        var expected = new List<QuoteDTO>();
+
+        td.Setup(m => m.Send(It.IsAny<QuoteListRequest>(), default)).ReturnsAsync(expected);
+
+        var sut = new QuoteController(td.Object);
+
+        var result = await sut.GetQuotes(new CancellationToken());
+
+        var ok = Assert.IsAssignableFrom<OkObjectResult>(result);
+
+        Assert.Equal(expected, ok.Value);
+    }
+
+    [Fact]
+    public async Task Get_Quote_Returns_Ok()
+    {
+        var td = new Mock<IMediator>();
+
+        var expected = new QuoteDTO() { Description = "", Author = new AuthorDTO() { Name = "" } };
+
+        td.Setup(m => m.Send(It.IsAny<QuoteRequest>(), default)).ReturnsAsync(expected);
+
+        var sut = new QuoteController(td.Object);
+
+        var result = await sut.GetQuoteById(Guid.NewGuid(), new CancellationToken());
+
+        var ok = Assert.IsAssignableFrom<OkObjectResult>(result);
+
+        Assert.Equal(expected, ok.Value);
+    }
+
+    [Fact]
+    public async Task Get_All_Quotes()
+    {
+        var expected = new List<Quote>
         {
-            var td = new Mock<IMediator>();
+            new Quote()
+            {
+                Description = "Quote 1",
+                Author = new Author()
+                {
+                    Name = "Author 1"
+                }
+            },
+            new Quote()
+            {
+                Description = "Quote 2",
+                Author = new Author()
+                {
+                    Name = "Author 2"
+                }
+            }
+        }.AsQueryable();
 
-            var expected = new List<QuoteDTO>();
+        var mockSet = new Mock<DbSet<Quote>>();
 
-            td.Setup(m => m.Send(It.IsAny<QuoteListRequest>(), default)).ReturnsAsync(expected);
+        mockSet.As<IAsyncEnumerable<Quote>>()
+            .Setup(d => d.GetAsyncEnumerator(It.IsAny<CancellationToken>()))
+            .Returns(new TestAsyncEnumerator<Quote>(expected.GetEnumerator()));
 
-            var sut = new QuoteController(td.Object);
+        mockSet.As<IQueryable<Quote>>()
+            .Setup(m => m.Provider)
+            .Returns(new TestAsyncQueryProvider<Quote>(expected.Provider));
 
-            var result = await sut.GetQuotes(new CancellationToken());
+        mockSet.As<IQueryable<Quote>>().Setup(m => m.Expression).Returns(expected.Expression);
+        mockSet.As<IQueryable<Quote>>().Setup(m => m.ElementType).Returns(expected.ElementType);
+        mockSet.As<IQueryable<Quote>>().Setup(m => m.GetEnumerator()).Returns(() => expected.GetEnumerator());
 
-            var ok = Assert.IsAssignableFrom<OkObjectResult>(result);
+        var context = new Mock<MindMeldContext>();
 
-            Assert.Equal(expected, ok.Value);
+        context.Setup(x => x.Quotes).Returns(mockSet.Object);
+
+        //var unitOfWork = new UnitOfWork(context.Object);
+
+        //var actual = await unitOfWork.QuoteRepository.GetList();
+
+        //var quoteRepo = new QuoteRepository(context.Object);
+
+        //var actual = await quoteRepo.GetList();
+
+        var actual = await context.Object.Quotes.ToListAsync();
+
+        //var genericRepo = new Mock<GenericRepository<Quote>>(context.Object);
+
+        //var actual = await genericRepo.Object.GetList();
+
+        Assert.Equal(2, actual.Count());
+
+    }
+}
+
+internal class TestAsyncEnumerable<T> : EnumerableQuery<T>, IAsyncEnumerable<T>, IQueryable<T>
+{
+    public IAsyncEnumerator<T> GetAsyncEnumerator(CancellationToken cancellationToken = default) =>
+        new TestAsyncEnumerator<T>(this.AsEnumerable().GetEnumerator());
+
+
+    public TestAsyncEnumerable(IEnumerable<T> enumerable)
+            : base(enumerable)
+    { }
+
+    public TestAsyncEnumerable(Expression expression)
+        : base(expression)
+    { }
+}
+
+internal class TestAsyncEnumerator<T> : IAsyncEnumerator<T>, IAsyncDisposable, IDisposable
+{
+    private readonly IEnumerator<T> enumerator;
+
+    private Utf8JsonWriter? _jsonWriter = new(new MemoryStream());
+
+    public TestAsyncEnumerator(IEnumerator<T> enumerator)
+    {
+        this.enumerator = enumerator;
+    }
+
+    public void Dispose()
+    {
+        Dispose(disposing: true);
+        GC.SuppressFinalize(this);
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        await DisposeAsyncCore().ConfigureAwait(false);
+
+        Dispose(disposing: false);
+#pragma warning disable CA1816 // Dispose methods should call SuppressFinalize
+
+        GC.SuppressFinalize(this);
+#pragma warning restore CA1816 // Dispose methods should call SuppressFinalize
+    }
+
+    protected virtual void Dispose(bool disposing)
+    {
+        if (disposing)
+        {
+            _jsonWriter?.Dispose();
+            _jsonWriter = null;
+        }
+    }
+
+    protected virtual async ValueTask DisposeAsyncCore()
+    {
+        if (_jsonWriter is not null)
+        {
+            await _jsonWriter.DisposeAsync().ConfigureAwait(false);
         }
 
-        [Fact]
-        public async Task Get_Quote_Returns_Ok()
-        {
-            var td = new Mock<IMediator>();
+        _jsonWriter = null;
+    }
 
-            var expected = new QuoteDTO() { Description = "", Author = new AuthorDTO() { Name = "" } };
+    public T Current => enumerator.Current;
 
-            td.Setup(m => m.Send(It.IsAny<QuoteRequest>(), default)).ReturnsAsync(expected);
+    public Task<bool> MoveNextAsync(CancellationToken cancellationToken)
+    {
+        return Task.FromResult(enumerator.MoveNext());
+    }
 
-            var sut = new QuoteController(td.Object);
+    public ValueTask<bool> MoveNextAsync()
+    {
+        return new ValueTask<bool>(enumerator.MoveNext());
+    }
+}
 
-            var result = await sut.GetQuoteById(Guid.NewGuid(), new CancellationToken());
+internal class TestAsyncQueryProvider<TEntity> : IAsyncQueryProvider
+{
+    private readonly IQueryProvider _inner;
 
-            var ok = Assert.IsAssignableFrom<OkObjectResult>(result);
+    internal TestAsyncQueryProvider(IQueryProvider inner)
+    {
+        _inner = inner;
+    }
 
-            Assert.Equal(expected, ok.Value);
-        }
+    public IQueryable CreateQuery(Expression expression)
+    {
+        return new TestAsyncEnumerable<TEntity>(expression);
+    }
+
+    public IQueryable<TElement> CreateQuery<TElement>(Expression expression)
+    {
+        return new TestAsyncEnumerable<TElement>(expression);
+    }
+
+    public object Execute(Expression expression)
+    {
+        return _inner.Execute(expression);
+    }
+
+    public TResult Execute<TResult>(Expression expression)
+    {
+        return _inner.Execute<TResult>(expression);
+    }
+
+    public Task<object> ExecuteAsync(Expression expression, CancellationToken cancellationToken)
+    {
+        return Task.FromResult(Execute(expression));
+    }
+
+    public Task<TResult> ExecuteAsync<TResult>(Expression expression, CancellationToken cancellationToken)
+    {
+        return Task.FromResult(Execute<TResult>(expression));
+    }
+
+    TResult IAsyncQueryProvider.ExecuteAsync<TResult>(Expression expression, CancellationToken cancellationToken)
+    {
+        return Task.FromResult(Execute<TResult>(expression)).Result;
+
+        //return Execute<TResult>(expression);
+
+        //throw new NotImplementedException();
     }
 }
