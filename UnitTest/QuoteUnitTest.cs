@@ -1,11 +1,13 @@
 ﻿using API.Controllers;
 using Application.DTO;
+using Application.Persistance;
 using Application.UseCases;
 using Application.UseCases.Quotes.Query;
 using Domain.Models;
 using Domain.Shared;
 using Infrastructure;
 using Infrastructure.Repositories;
+using MapsterMapper;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -64,6 +66,65 @@ public class QuoteUnitTest
     }
 
     [Fact]
+    public async Task Get_Quote_List_Request_Handler()
+    {
+        var quoteDTOList = new List<Quote>
+        {
+            new Quote()
+            {
+                Description = "Quote 1",
+                Author = new Author()
+                {
+                    Name = "Author 1"
+                }
+            },
+            new Quote()
+            {
+                Description = "Quote 2",
+                Author = new Author()
+                {
+                    Name = "Author 2"
+                }
+            }
+        };
+
+        var expected = new List<QuoteDTO>
+        {
+            new QuoteDTO()
+            {
+                Description = "Quote 1",
+                Author = new AuthorDTO()
+                {
+                    Name = "Author 1"
+                }
+            },
+            new QuoteDTO()
+            {
+                Description = "Quote 2",
+                Author = new AuthorDTO()
+                {
+                    Name = "Author 2"
+                }
+            }
+        };
+
+        var unitOfWork = new Mock<IUnitOfWork>();
+        var mapper = new Mock<IMapper>();
+
+        unitOfWork.Setup(m => m.QuoteRepository.GetList(It.IsAny<Expression<Func<Quote, bool>>?>(), 
+            It.IsAny<Func<IQueryable<Quote>, IOrderedQueryable<Quote>>?>(), It.IsAny<string>()))
+            .ReturnsAsync(quoteDTOList);
+
+        mapper.Setup(m => m.Map<IEnumerable<QuoteDTO>>(It.IsAny<IEnumerable<Quote>>())).Returns(expected);
+
+        var handler = new QuoteListRequestHandler(unitOfWork.Object, mapper.Object);
+
+        var actual = await handler.Handle(new QuoteListRequest(), default);
+
+        Assert.NotNull(actual.Value);
+    }
+
+    [Fact]
     public async Task Get_All_Quotes()
     {
         var expected = new List<Quote>
@@ -104,22 +165,9 @@ public class QuoteUnitTest
 
         context.Setup(x => x.Quotes).Returns(mockSet.Object);
 
-        //var unitOfWork = new UnitOfWork(context.Object);
-
-        //var actual = await unitOfWork.QuoteRepository.GetList();
-
-        //var quoteRepo = new QuoteRepository(context.Object);
-
-        //var actual = await quoteRepo.GetList();
-
         var actual = await context.Object.Quotes.ToListAsync();
 
-        //var genericRepo = new Mock<GenericRepository<Quote>>(context.Object);
-
-        //var actual = await genericRepo.Object.GetList();
-
         Assert.Equal(2, actual.Count());
-
     }
 }
 
