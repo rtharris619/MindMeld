@@ -6,7 +6,7 @@ using MapsterMapper;
 
 namespace Application.UseCases.Quotes.Command
 {
-    public class QuoteCreateCommandHandler(IUnitOfWork unitOfWork, IValidator<Quote> validator, IMapper mapper) 
+    public sealed class QuoteCreateCommandHandler(IUnitOfWork unitOfWork, IValidator<Quote> validator, IMapper mapper) 
         : ICommandHandler<QuoteCreateCommand, int>
     {
         private readonly IUnitOfWork _unitOfWork = unitOfWork;

@@ -35,7 +35,7 @@ namespace Infrastructure
             }
         }
 
-        public async Task<int> SaveChanges(CancellationToken cancellationToken)
+        public async Task<int> SaveChanges(CancellationToken cancellationToken = default)
         {
             return await _context.SaveChangesAsync(cancellationToken);
         }

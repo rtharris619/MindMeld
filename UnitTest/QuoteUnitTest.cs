@@ -23,7 +23,6 @@ using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Xunit;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace UnitTest;
 
@@ -121,7 +120,13 @@ public class QuoteUnitTest
 
         var actual = await handler.Handle(new QuoteListRequest(), default);
 
-        Assert.NotNull(actual.Value);
+        Assert.Equal(2, actual.Value.Count);
+
+        foreach (var item in actual.Value)
+        {
+            Assert.Contains(expected, x => x.Description == item.Description);
+            Assert.Contains(Assert.Single(expected, x => x.Description == item.Description).Author.Name, item.Author.Name);
+        }
     }
 
     [Fact]

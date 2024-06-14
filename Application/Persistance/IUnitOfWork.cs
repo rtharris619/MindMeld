@@ -12,6 +12,6 @@ namespace Application.Persistance
         IAuthorRepository AuthorRepository { get; }
         IQuoteRepository QuoteRepository { get; }
 
-        Task<int> SaveChanges(CancellationToken cancellationToken);
+        Task<int> SaveChanges(CancellationToken cancellationToken = default);
     }
 }
