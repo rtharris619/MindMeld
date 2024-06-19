@@ -48,15 +48,11 @@ namespace Infrastructure
 
             UpdateBaseEntities(EntityState.Modified);
 
-            //var deleted = ChangeTracker.Entries()
-            //            .Where(t => t.State == EntityState.Deleted)
-            //            .Select(t => t.Entity)
-            //            .ToArray();
+            SaveAudit(EntityState.Added);
 
-            //foreach (var entity in deleted)
-            //{
-            //    // AUDIT
-            //}
+            SaveAudit(EntityState.Modified);
+
+            SaveAudit(EntityState.Deleted);
 
             return await base.SaveChangesAsync(cancellationToken);
         }
@@ -75,14 +71,14 @@ namespace Infrastructure
                     var track = entity as Base;
                     if (state == EntityState.Added)
                     {
-                        track.CreatedDate = DateTime.Now; //DateTime.UtcNow;
+                        track.CreatedDate = DateTime.Now;
                     }
                     track.ModifiedDate = DateTime.Now;
                 }
             }
         }
 
-        private void ApplyAuditing()
+        private void SaveAudit(EntityState state)
         {
 
         }
