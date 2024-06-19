@@ -37,5 +37,13 @@ namespace API.Controllers
 
             return response.IsSuccess ? Ok(response.Value) : BadRequest(response.Errors);
         }
+
+        [HttpDelete]
+        public async Task<IActionResult> DeleteQuotes(CancellationToken cancellationToken)
+        {
+            var response = await _mediator.Send(new QuoteListDeleteCommand(), cancellationToken);
+
+            return response.IsSuccess ? Ok(response.Value) : BadRequest(response.Errors);
+        }
     }
 }

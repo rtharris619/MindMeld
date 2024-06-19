@@ -101,10 +101,10 @@ namespace Infrastructure.Repositories
         public virtual async Task Remove(Guid id)
         {
             TEntity entityToDelete = await dbSet.FindAsync(id);
-            Delete(entityToDelete);
+            Remove(entityToDelete);
         }
 
-        public virtual void Delete(TEntity entityToDelete)
+        public virtual void Remove(TEntity entityToDelete)
         {
             if (context.Entry(entityToDelete).State == EntityState.Detached)
             {
