@@ -8,8 +8,8 @@ services:
       context: .
       dockerfile: API/Dockerfile
     ports:
-      - "8080:8080"
-      - "8081:8081"
+      - "3000:3000"
+      - "3001:3001"
   database:
     image: postgres:latest
     container_name: database

@@ -1,9 +1,11 @@
 ﻿using Domain.Models;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace Infrastructure
@@ -15,13 +17,13 @@ namespace Infrastructure
         }
 
         public MindMeldContext(DbContextOptions options) : base(options)
-        {         
-            if (Database.GetPendingMigrations().Any())
-                Database.Migrate();
+        {
+            
         }
 
         public virtual DbSet<Quote> Quotes { get; set; }
         public virtual DbSet<Author> Authors { get; set; }
+        public virtual DbSet<Audit> Audits { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -59,10 +61,7 @@ namespace Infrastructure
 
         private void UpdateBaseEntities(EntityState state)
         {
-            var entities = ChangeTracker.Entries()
-                        .Where(t => t.State == state)
-                        .Select(t => t.Entity)
-                        .ToArray();
+            var entities = GetChangeTrackerEntities(state);
 
             foreach (var entity in entities)
             {
@@ -78,9 +77,75 @@ namespace Infrastructure
             }
         }
 
+        private object[] GetChangeTrackerEntities(EntityState state)
+        {
+            return ChangeTracker.Entries()
+                        .Where(t => t.State == state)
+                        .Select(t => t.Entity)
+                        .ToArray();
+        }
+
         private void SaveAudit(EntityState state)
         {
+            var entries = ChangeTracker.Entries().Where(t => t.State == state);
 
+            var temporaryProperties = entries.SelectMany(e => e.Properties).Where(p => p.IsTemporary).ToList();
+
+            var newValues = new Dictionary<string, object?>();
+            var oldValues = new Dictionary<string, object?>();
+
+            var audits = new List<Audit>();
+
+            foreach (var entry in entries)
+            {
+                if (entry.Entity is Audit || entry.State == EntityState.Detached || entry.State == EntityState.Unchanged)
+                    continue;
+
+                var audit = new Audit() { AuditAction = "", AuditBy = "", Table = "" };
+
+                foreach (var property in entry.Properties)
+                {
+                    if (property.IsTemporary)
+                    {
+                        continue;
+                    }
+
+                    if (property.Metadata.IsPrimaryKey())
+                    {
+                        audit.Key = (Guid)property.CurrentValue;
+                        continue;
+                    }
+
+                    string propertyName = property.Metadata.Name;
+
+                    switch (entry.State)
+                    {
+                        case EntityState.Added:
+                            newValues[propertyName] = property.CurrentValue;
+                            break;
+
+                        case EntityState.Deleted:
+                            oldValues[propertyName] = property.OriginalValue;
+                            break;
+
+                        case EntityState.Modified:
+                            oldValues[propertyName] = property.OriginalValue;
+                            newValues[propertyName] = property.CurrentValue;
+                            break;
+                    }
+                }
+
+                audit.AuditDate = DateTime.UtcNow;
+                audit.AuditBy = "System";
+                audit.AuditAction = entry.State.ToString();
+                audit.Table = entry.Metadata.GetTableName();
+                audit.NewValues = JsonSerializer.Serialize(newValues);
+                audit.OldValues = JsonSerializer.Serialize(oldValues);
+                
+                audits.Add(audit);
+            }
+
+            Audits.AddRange(audits);
         }
     }
 }
