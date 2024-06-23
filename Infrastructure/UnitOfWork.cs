@@ -14,15 +14,25 @@ namespace Infrastructure
         private readonly MindMeldContext _context = context;
         private bool _disposed = false;
 
-        private IAuthorRepository? authorRepository;
-        private IQuoteRepository? quoteRepository;
+        private IAuditRepository? _auditRepository;
+        private IAuthorRepository? _authorRepository;
+        private IQuoteRepository? _quoteRepository;
+
+        public IAuditRepository AuditRepository
+        {
+            get
+            {
+                _auditRepository ??= new AuditRepository(_context);
+                return _auditRepository;
+            }
+        }
 
         public IAuthorRepository AuthorRepository
         {
             get
             {
-                authorRepository ??= new AuthorRepository(_context);
-                return authorRepository;
+                _authorRepository ??= new AuthorRepository(_context);
+                return _authorRepository;
             }
         }
 
@@ -30,10 +40,10 @@ namespace Infrastructure
         {
             get
             {
-                quoteRepository ??= new QuoteRepository(_context);
-                return quoteRepository;
+                _quoteRepository ??= new QuoteRepository(_context);
+                return _quoteRepository;
             }
-        }
+        }        
 
         public async Task<int> SaveChanges(CancellationToken cancellationToken = default)
         {

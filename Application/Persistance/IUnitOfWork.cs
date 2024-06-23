@@ -9,6 +9,7 @@ namespace Application.Persistance
 {
     public interface IUnitOfWork
     {
+        IAuditRepository AuditRepository { get; }
         IAuthorRepository AuthorRepository { get; }
         IQuoteRepository QuoteRepository { get; }
 

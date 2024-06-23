@@ -7,13 +7,6 @@ using System.Reflection;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-
-//var connectionString = builder.Configuration.GetConnectionString("Database");
-
-//builder.Services.AddDbContext<MindMeldContext>(opt =>
-//    opt.UseNpgsql(connectionString));
-
 builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssemblies(Assembly.GetExecutingAssembly()));
 builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssemblies(ApplicationAssemblyReference.assembly));
 
