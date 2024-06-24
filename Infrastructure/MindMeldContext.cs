@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Text.Json;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Infrastructure
@@ -43,21 +44,20 @@ namespace Infrastructure
         public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken)
         {
             ChangeTracker.DetectChanges();
-            
-            UpdateBaseEntities(EntityState.Added);
 
-            UpdateBaseEntities(EntityState.Modified);
+            UpdateBaseEntities();
 
-            var auditing = new Auditing(this);
-            var auditEntries = auditing.SaveAuditsBeforeSaveChanges();
-
-            var result = await base.SaveChangesAsync(cancellationToken);
-
-            auditing.SaveAuditsAfterSaveChanges(auditEntries);
+            var result = await SaveAudits(cancellationToken);
 
             result += await base.SaveChangesAsync(cancellationToken);
 
             return result;
+        }
+
+        private void UpdateBaseEntities()
+        {
+            UpdateBaseEntities(EntityState.Added);
+            UpdateBaseEntities(EntityState.Modified);
         }
 
         private void UpdateBaseEntities(EntityState state)
@@ -66,9 +66,8 @@ namespace Infrastructure
 
             foreach (var entity in entities)
             {
-                if (entity is Base)
+                if (entity is Base track)
                 {
-                    var track = entity as Base;
                     if (state == EntityState.Added)
                     {
                         track.CreatedDate = DateTime.Now;
@@ -84,6 +83,18 @@ namespace Infrastructure
                         .Where(t => t.State == state)
                         .Select(t => t.Entity)
                         .ToArray();
+        }
+
+        private async Task<int> SaveAudits(CancellationToken cancellationToken)
+        {
+            var auditing = new Auditing(this);
+            var auditEntries = auditing.SaveAuditsBeforeSaveChanges();
+
+            var result = await base.SaveChangesAsync(cancellationToken);
+
+            auditing.SaveAuditsAfterSaveChanges(auditEntries);
+
+            return result;
         }
     }
 }

@@ -11,4 +11,5 @@ namespace Application.UseCases.Quotes.Command;
 public sealed class QuoteCreateCommand : ICommand<int>
 {
     public QuoteDTO QuoteDTO { get; set; }
+    public required string Username { get; set; }
 }

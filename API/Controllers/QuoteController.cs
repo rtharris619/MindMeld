@@ -13,6 +13,7 @@ namespace API.Controllers
     public class QuoteController(IMediator mediator) : ControllerBase
     {
         private readonly IMediator _mediator = mediator;
+        private readonly string Username = "System";
 
         [HttpGet]
         public async Task<IActionResult> GetQuotes(CancellationToken cancellationToken)
@@ -33,7 +34,13 @@ namespace API.Controllers
         [HttpPost]
         public async Task<IActionResult> CreateQuote(QuoteDTO quoteDTO, CancellationToken cancellationToken)
         {           
-            var response = await _mediator.Send(new QuoteCreateCommand { QuoteDTO = quoteDTO }, cancellationToken);
+            var response = await _mediator.Send(
+                new QuoteCreateCommand 
+                { 
+                    QuoteDTO = quoteDTO, 
+                    Username = Username 
+                }
+            , cancellationToken);
 
             return response.IsSuccess ? Ok(response.Value) : BadRequest(response.Errors);
         }

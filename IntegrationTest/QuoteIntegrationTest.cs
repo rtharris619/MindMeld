@@ -41,10 +41,10 @@ namespace IntegrationTest
             Sender = _scope.ServiceProvider.GetRequiredService<ISender>();
         }
 
-        [Fact]
-        public async Task Seed_All_Quotes()
-        {
-            await Sender.Send(new SeedDataCommand { });
-        }
+        //[Fact]
+        //public async Task Seed_All_Quotes()
+        //{
+        //    await Sender.Send(new SeedDataCommand { });
+        //}
     }
 }

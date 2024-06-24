@@ -8,6 +8,6 @@ namespace Application.UseCases.SeedData.Command
 {
     public sealed class SeedDataCommand : ICommand<int>
     {
-
+        public required string Username { get; set; }
     }
 }

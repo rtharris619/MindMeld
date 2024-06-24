@@ -28,6 +28,8 @@ namespace UnitTest;
 
 public class QuoteUnitTest
 {
+    private readonly string Username = "System";
+
     [Fact]
     public async Task Get_All_Quotes_Returns_Ok()
     {
@@ -51,7 +53,8 @@ public class QuoteUnitTest
     {
         var td = new Mock<IMediator>();
 
-        var expected = new QuoteDTO() { Description = "", Author = new AuthorDTO() { Name = "" } };
+        var expected = new QuoteDTO() { CreatedBy = Username, ModifiedBy = Username, Description = "", 
+            Author = new AuthorDTO() { CreatedBy = Username, ModifiedBy = Username, Name = "" } };
 
         td.Setup(m => m.Send(It.IsAny<QuoteRequest>(), default)).ReturnsAsync(expected);
 
@@ -67,52 +70,15 @@ public class QuoteUnitTest
     [Fact]
     public async Task Get_Quote_List_Request_Handler()
     {
-        var quoteDTOList = new List<Quote>
-        {
-            new Quote()
-            {
-                Description = "Quote 1",
-                Author = new Author()
-                {
-                    Name = "Author 1"
-                }
-            },
-            new Quote()
-            {
-                Description = "Quote 2",
-                Author = new Author()
-                {
-                    Name = "Author 2"
-                }
-            }
-        };
-
-        var expected = new List<QuoteDTO>
-        {
-            new QuoteDTO()
-            {
-                Description = "Quote 1",
-                Author = new AuthorDTO()
-                {
-                    Name = "Author 1"
-                }
-            },
-            new QuoteDTO()
-            {
-                Description = "Quote 2",
-                Author = new AuthorDTO()
-                {
-                    Name = "Author 2"
-                }
-            }
-        };
+        var quoteList = GetMockQuoteList();
+        var expected = GetMockQuoteDTOList();
 
         var unitOfWork = new Mock<IUnitOfWork>();
         var mapper = new Mock<IMapper>();
 
         unitOfWork.Setup(m => m.QuoteRepository.GetList(It.IsAny<Expression<Func<Quote, bool>>?>(), 
             It.IsAny<Func<IQueryable<Quote>, IOrderedQueryable<Quote>>?>(), It.IsAny<string>()))
-            .ReturnsAsync(quoteDTOList);
+            .ReturnsAsync(quoteList);
 
         mapper.Setup(m => m.Map<IEnumerable<QuoteDTO>>(It.IsAny<IEnumerable<Quote>>())).Returns(expected);
 
@@ -132,25 +98,7 @@ public class QuoteUnitTest
     [Fact]
     public async Task Get_All_Quotes()
     {
-        var expected = new List<Quote>
-        {
-            new Quote()
-            {
-                Description = "Quote 1",
-                Author = new Author()
-                {
-                    Name = "Author 1"
-                }
-            },
-            new Quote()
-            {
-                Description = "Quote 2",
-                Author = new Author()
-                {
-                    Name = "Author 2"
-                }
-            }
-        }.AsQueryable();
+        var expected = GetMockQuoteList().AsQueryable();
 
         var mockSet = new Mock<DbSet<Quote>>();
 
@@ -173,6 +121,68 @@ public class QuoteUnitTest
         var actual = await context.Object.Quotes.ToListAsync();
 
         Assert.Equal(2, actual.Count());
+    }
+
+    private List<Quote> GetMockQuoteList()
+    {
+        return
+        [
+            new Quote()
+            {
+                Description = "Quote 1",
+                Author = new Author()
+                {
+                    Name = "Author 1",
+                    CreatedBy = Username,
+                    ModifiedBy = Username
+                },
+                CreatedBy = Username,
+                ModifiedBy = Username
+            },
+            new Quote()
+            {
+                Description = "Quote 2",
+                Author = new Author()
+                {
+                    Name = "Author 2",
+                    CreatedBy = Username,
+                    ModifiedBy = Username
+                },
+                CreatedBy = Username,
+                ModifiedBy = Username
+            }
+        ];
+    }
+
+    private List<QuoteDTO> GetMockQuoteDTOList()
+    {
+        return
+        [
+            new QuoteDTO()
+            {
+                Description = "Quote 1",
+                Author = new AuthorDTO()
+                {
+                    Name = "Author 1",
+                    CreatedBy = Username,
+                    ModifiedBy = Username
+                },
+                CreatedBy = Username,
+                ModifiedBy = Username
+            },
+            new QuoteDTO()
+            {
+                Description = "Quote 2",
+                Author = new AuthorDTO()
+                {
+                    Name = "Author 2",
+                    CreatedBy = Username,
+                    ModifiedBy = Username
+                },
+                CreatedBy = Username,
+                ModifiedBy = Username
+            }
+        ];
     }
 }
 

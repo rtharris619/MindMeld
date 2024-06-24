@@ -10,29 +10,29 @@ namespace Application.UseCases.SeedData.Command
 
         public async Task<Result<int>> Handle(SeedDataCommand request, CancellationToken cancellationToken)
         {
-            return await SeedQuotes();
+            return await SeedQuotes(request.Username);
         }
 
-        private async Task<int> SeedQuotes()
+        private async Task<int> SeedQuotes(string username)
         {
             var totalRecordsSaved = 0;
 
             var author = "Jim Rohn";
             var quote = "Either you run the day or the day runs you.";
-            totalRecordsSaved += await SeedQuote(quote, author);
+            totalRecordsSaved += await SeedQuote(quote, author, username);
 
             author = "Helen Keller";
             quote = "Never bend your head. Always hold it high. Look the world straight in the face.";
-            totalRecordsSaved += await SeedQuote(quote, author);
+            totalRecordsSaved += await SeedQuote(quote, author, username);
 
             author = "John Maxwell";
             quote = "As leaders, we must be focused on our present capabilities, not our past regrets.";
-            totalRecordsSaved += await SeedQuote(quote, author);
+            totalRecordsSaved += await SeedQuote(quote, author, username);
 
             return totalRecordsSaved;
         }
 
-        private async Task<int> SeedQuote(string quote, string author)
+        private async Task<int> SeedQuote(string quote, string author, string username)
         {
             var existingQuote = await CheckForExistingQuote(quote);
 
@@ -41,8 +41,8 @@ namespace Application.UseCases.SeedData.Command
                 return 0;
             }
 
-            var authorToSave = await AddAuthor(author);
-            await AddQuote(quote, authorToSave);
+            var authorToSave = await AddAuthor(author, username);
+            await AddQuote(quote, authorToSave, username);
 
             return await _unitOfWork.SaveChanges();
         }
@@ -54,7 +54,7 @@ namespace Application.UseCases.SeedData.Command
             return result != null;
         }
 
-        private async Task<Author> AddAuthor(string author)
+        private async Task<Author> AddAuthor(string author, string username)
         {
             var authorToSave = await _unitOfWork.AuthorRepository.GetOne(filter: x => x.Name == author);
 
@@ -62,7 +62,9 @@ namespace Application.UseCases.SeedData.Command
             {
                 authorToSave = new Author
                 {
-                    Name = author
+                    Name = author,
+                    CreatedBy = username,
+                    ModifiedBy = username
                 };
 
                 await _unitOfWork.AuthorRepository.Add(authorToSave);
@@ -71,12 +73,14 @@ namespace Application.UseCases.SeedData.Command
             return authorToSave;
         }
 
-        private async Task AddQuote(string quote, Author author)
+        private async Task AddQuote(string quote, Author author, string username)
         {
             var quoteToSave = new Quote
             {
                 Author = author,
-                Description = quote
+                Description = quote,
+                CreatedBy = username,
+                ModifiedBy = username
             };
 
             await _unitOfWork.QuoteRepository.Add(quoteToSave);

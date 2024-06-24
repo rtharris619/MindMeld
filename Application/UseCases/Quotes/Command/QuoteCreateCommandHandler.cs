@@ -30,19 +30,21 @@ namespace Application.UseCases.Quotes.Command
 
             var author = await AddAuthor(request, quote);
 
-            await AddQuote(quote, author);
+            await AddQuote(quote, author, request.Username);
 
             var rowsAffected = await _unitOfWork.SaveChanges(cancellationToken);
 
             return rowsAffected;
         }
 
-        private async Task AddQuote(Quote quote, Author author)
+        private async Task AddQuote(Quote quote, Author author, string username)
         {
             var quoteToSave = new Quote
             {
                 Author = author,
-                Description = quote.Description
+                Description = quote.Description,
+                CreatedBy = username,
+                ModifiedBy = username
             };
 
             await _unitOfWork.QuoteRepository.Add(quoteToSave);
@@ -56,7 +58,9 @@ namespace Application.UseCases.Quotes.Command
             {
                 author = new Author
                 {
-                    Name = request.QuoteDTO.Author.Name
+                    Name = request.QuoteDTO.Author.Name,
+                    CreatedBy = request.Username,
+                    ModifiedBy = request.Username
                 };
 
                 await _unitOfWork.AuthorRepository.Add(author);
